@@ -118,6 +118,10 @@ const translations = {
         placeholder: '输入消息...',
         send: '发送',
         selectModel: '选择模型',
+        testPlaceholder: '发送一条测试请求...',
+        streaming: '流式传输已启用',
+        greeting: '你好！我是由 RelayOS 驱动的 AI 助手，有什么可以帮到你？',
+        simulatedReply: '这是来自 {model} 对以下内容的模拟回复："{msg}"',
       },
       imageGen: {
         title: 'AI 图像生成',
@@ -126,6 +130,9 @@ const translations = {
         size: '尺寸',
         style: '风格',
         styles: ['写实', '动漫', '油画', '水彩', '像素'],
+        generating: '生成中...',
+        previewTitle: '生成图像预览',
+        previewEmpty: '预览将显示在此处',
       },
       usage: {
         title: '用量统计',
@@ -136,6 +143,8 @@ const translations = {
         headers: ['时间', '模型', '类型', 'Token 数', '状态', '延迟'],
         tokenToday: '今日 Token 使用',
         apiToday: '今日 API 调用',
+        vsYesterday: '较昨日 +12%',
+        avgLatency: '平均延迟：245ms',
       },
       models: {
         title: '模型管理',
@@ -150,6 +159,9 @@ const translations = {
         priority: '优先级',
         condition: '条件',
         target: '目标模型',
+        status: '状态',
+        active: '活跃',
+        inactive: '停用',
       },
       settings: {
         title: '系统设置',
@@ -158,6 +170,7 @@ const translations = {
         webhook: 'Webhook URL',
         rateLimit: '速率限制',
         save: '保存设置',
+        rateUnit: '次/分钟',
       },
     },
     topbar: {
@@ -285,6 +298,10 @@ const translations = {
         placeholder: 'Type a message...',
         send: 'Send',
         selectModel: 'Select Model',
+        testPlaceholder: 'Send a test request...',
+        streaming: 'Streaming enabled',
+        greeting: 'Hello! I am your AI assistant powered by RelayOS. How can I help you today?',
+        simulatedReply: 'This is a simulated response from {model} to: "{msg}"',
       },
       imageGen: {
         title: 'AI Image Generation',
@@ -293,6 +310,9 @@ const translations = {
         size: 'Size',
         style: 'Style',
         styles: ['Realistic', 'Anime', 'Oil Paint', 'Watercolor', 'Pixel'],
+        generating: 'Generating...',
+        previewTitle: 'Generated image preview',
+        previewEmpty: 'Preview will appear here',
       },
       usage: {
         title: 'Usage Statistics',
@@ -303,6 +323,8 @@ const translations = {
         headers: ['Time', 'Model', 'Type', 'Tokens', 'Status', 'Latency'],
         tokenToday: 'Token Usage Today',
         apiToday: 'API Calls Today',
+        vsYesterday: '+12% from yesterday',
+        avgLatency: 'Avg latency: 245ms',
       },
       models: {
         title: 'Model Management',
@@ -317,6 +339,9 @@ const translations = {
         priority: 'Priority',
         condition: 'Condition',
         target: 'Target Model',
+        status: 'Status',
+        active: 'Active',
+        inactive: 'Inactive',
       },
       settings: {
         title: 'System Settings',
@@ -325,6 +350,7 @@ const translations = {
         webhook: 'Webhook URL',
         rateLimit: 'Rate Limit',
         save: 'Save Settings',
+        rateUnit: 'requests / minute',
       },
     },
     topbar: {
@@ -1089,12 +1115,12 @@ function DashHome({ t, isDark }) {
             </select>
           </div>
           <div style={{ display: 'flex', gap: '10px' }}>
-            <input value={consoleInput} onChange={e => setConsoleInput(e.target.value)} placeholder="Send a test request..."
+            <input value={consoleInput} onChange={e => setConsoleInput(e.target.value)} placeholder={t.dashboard.console.testPlaceholder}
               style={{ flex: 1, padding: '12px 16px', borderRadius: '8px', border: `1px solid ${s.border}`, background: isDark ? 'rgba(0,0,0,0.3)' : '#f8f9fa', color: s.text, fontSize: 14, outline: 'none' }} />
             <button style={{ padding: '12px 20px', borderRadius: '8px', border: 'none', background: 'linear-gradient(135deg, #4f8ef7, #7c5cbf)', color: '#fff', fontSize: 14, fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', transition: 'transform 0.2s ease' }}
               onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-1px)'}
               onMouseLeave={e => e.currentTarget.style.transform = 'translateY(0)'}>
-              {Icons.send} Send
+              {Icons.send} {t.dashboard.console.send}
             </button>
           </div>
         </div>
@@ -1186,12 +1212,17 @@ function DashHome({ t, isDark }) {
 function DashConsole({ t, isDark }) {
   const s = getDashStyles(isDark);
   const [messages, setMessages] = useState([
-    { role: 'assistant', content: 'Hello! I am your AI assistant powered by RelayOS. How can I help you today?' },
+    { role: 'assistant', content: t.dashboard.console.greeting },
   ]);
   const [input, setInput] = useState('');
   const [model, setModel] = useState('GPT-4o');
   const models = ['GPT-4o', 'GPT-4o-mini', 'Claude 3.5 Sonnet', 'DeepSeek V3', 'Gemini 1.5 Pro'];
   const messagesEndRef = useRef(null);
+
+  // 语言切换时重置问候语
+  useEffect(() => {
+    setMessages([{ role: 'assistant', content: t.dashboard.console.greeting }]);
+  }, [t]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -1203,12 +1234,12 @@ function DashConsole({ t, isDark }) {
     const userMsg = input;
     setInput('');
     setTimeout(() => {
-      setMessages((prev) => [...prev, { role: 'assistant', content: `This is a simulated response from ${model} to: "${userMsg}"` }]);
+      setMessages((prev) => [...prev, { role: 'assistant', content: t.dashboard.console.simulatedReply.replace('{model}', model).replace('{msg}', userMsg) }]);
     }, 800);
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: 'calc(100vh - 100px)' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', height: 'calc(100vh - 136px)' }}>
       {/* Model Selector */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px', padding: '12px 16px', ...s.card }}>
         <span style={{ fontSize: 13, color: s.textSecondary }}>{t.dashboard.console.selectModel}:</span>
@@ -1217,7 +1248,7 @@ function DashConsole({ t, isDark }) {
           {models.map((m) => <option key={m} value={m}>{m}</option>)}
         </select>
         <div style={{ marginLeft: 'auto', fontSize: 12, color: s.textTertiary }}>
-          {Icons.zap} <span style={{ marginLeft: 4 }}>Streaming enabled</span>
+          {Icons.zap} <span style={{ marginLeft: 4 }}>{t.dashboard.console.streaming}</span>
         </div>
       </div>
       {/* Messages */}
@@ -1310,20 +1341,20 @@ function DashImageGen({ t, isDark }) {
           {generating ? (
             <div style={{ textAlign: 'center' }}>
               <div style={{ width: 40, height: 40, border: '3px solid rgba(79,142,247,0.2)', borderTop: '3px solid #4f8ef7', borderRadius: '50%', animation: 'spin 1s linear infinite', margin: '0 auto 16px' }} />
-              <p style={{ color: s.textSecondary, fontSize: 14 }}>Generating...</p>
+              <p style={{ color: s.textSecondary, fontSize: 14 }}>{t.dashboard.imageGen.generating}</p>
             </div>
           ) : generated ? (
             <div style={{ width: '100%', height: 300, borderRadius: '10px', background: 'linear-gradient(135deg, rgba(79,142,247,0.15), rgba(124,92,191,0.15))', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <div style={{ textAlign: 'center' }}>
                 <div style={{ fontSize: 48, marginBottom: '12px' }}>🎨</div>
-                <p style={{ color: s.textSecondary, fontSize: 14 }}>Generated image preview</p>
+                <p style={{ color: s.textSecondary, fontSize: 14 }}>{t.dashboard.imageGen.previewTitle}</p>
                 <p style={{ color: s.accent, fontSize: 12, marginTop: '4px' }}>{size} | {t.dashboard.imageGen.styles[style]}</p>
               </div>
             </div>
           ) : (
             <div style={{ textAlign: 'center' }}>
               <div style={{ fontSize: 36, marginBottom: '12px', opacity: 0.4 }}>🖼️</div>
-              <p style={{ color: s.textTertiary, fontSize: 14 }}>Preview will appear here</p>
+              <p style={{ color: s.textTertiary, fontSize: 14 }}>{t.dashboard.imageGen.previewEmpty}</p>
             </div>
           )}
         </div>
@@ -1378,7 +1409,7 @@ function DashUsage({ t, isDark }) {
           onMouseLeave={e => e.currentTarget.style.boxShadow = 'none'}>
           <h3 style={{ fontSize: 14, fontWeight: 600, color: s.text, marginBottom: '14px' }}>{t.dashboard.usage.tokenToday}</h3>
           <div style={{ fontSize: 28, fontWeight: 700, color: s.accent }}><AnimatedCounter value="48320" /></div>
-          <p style={{ fontSize: 12, color: '#22c55e', marginTop: '6px' }}>+12% from yesterday</p>
+          <p style={{ fontSize: 12, color: '#22c55e', marginTop: '6px' }}>{t.dashboard.usage.vsYesterday}</p>
         </div>
         {/* API calls today */}
         <div style={{ ...s.card }}
@@ -1386,7 +1417,7 @@ function DashUsage({ t, isDark }) {
           onMouseLeave={e => e.currentTarget.style.boxShadow = 'none'}>
           <h3 style={{ fontSize: 14, fontWeight: 600, color: s.text, marginBottom: '14px' }}>{t.dashboard.usage.apiToday}</h3>
           <div style={{ fontSize: 28, fontWeight: 700, color: s.accent }}><AnimatedCounter value="127" /></div>
-          <p style={{ fontSize: 12, color: s.textSecondary, marginTop: '6px' }}>Avg latency: 245ms</p>
+          <p style={{ fontSize: 12, color: s.textSecondary, marginTop: '6px' }}>{t.dashboard.usage.avgLatency}</p>
         </div>
       </div>
       {/* Logs table */}
@@ -1501,7 +1532,7 @@ function DashRouting({ t, isDark }) {
               <th style={{ padding: '14px 16px', textAlign: 'left', color: s.textTertiary, fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px' }}>{t.dashboard.routing.priority}</th>
               <th style={{ padding: '14px 16px', textAlign: 'left', color: s.textTertiary, fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px' }}>{t.dashboard.routing.condition}</th>
               <th style={{ padding: '14px 16px', textAlign: 'left', color: s.textTertiary, fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px' }}>{t.dashboard.routing.target}</th>
-              <th style={{ padding: '14px 16px', textAlign: 'left', color: s.textTertiary, fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px' }}>Status</th>
+              <th style={{ padding: '14px 16px', textAlign: 'left', color: s.textTertiary, fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px' }}>{t.dashboard.routing.status}</th>
             </tr>
           </thead>
           <tbody>
@@ -1514,7 +1545,7 @@ function DashRouting({ t, isDark }) {
                 <td style={{ padding: '14px 16px', fontSize: 13, color: s.textSecondary }}>{rule.target}</td>
                 <td style={{ padding: '14px 16px' }}>
                   <span style={{ padding: '3px 10px', borderRadius: '6px', fontSize: 11, fontWeight: 600, background: rule.status === 'active' ? 'rgba(34,197,94,0.12)' : 'rgba(161,161,170,0.12)', color: rule.status === 'active' ? '#22c55e' : '#a1a1aa' }}>
-                    {rule.status}
+                    {rule.status === 'active' ? t.dashboard.routing.active : t.dashboard.routing.inactive}
                   </span>
                 </td>
               </tr>
@@ -1558,7 +1589,7 @@ function DashSettings({ t, isDark }) {
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
             <input value={rateLimit} onChange={(e) => setRateLimit(e.target.value)}
               style={{ width: 120, padding: '10px 14px', borderRadius: '8px', border: `1px solid ${s.border}`, background: isDark ? 'rgba(0,0,0,0.3)' : '#f8f9fa', color: s.text, fontSize: 13, outline: 'none' }} />
-            <span style={{ fontSize: 13, color: s.textSecondary }}>requests / minute</span>
+            <span style={{ fontSize: 13, color: s.textSecondary }}>{t.dashboard.settings.rateUnit}</span>
           </div>
         </div>
         <button style={{ padding: '14px 32px', borderRadius: '10px', border: 'none', background: 'linear-gradient(135deg, #4f8ef7, #7c5cbf)', color: '#fff', fontSize: 15, fontWeight: 600, cursor: 'pointer', alignSelf: 'flex-start', transition: 'transform 0.2s ease' }}
@@ -1595,7 +1626,7 @@ function Dashboard({ t, isDark, setIsDark, lang, setLang, onLogout }) {
     <div style={{ background: s.bg, minHeight: '100vh', color: s.text }}>
       <Sidebar t={t} isDark={isDark} activeTab={activeTab} setActiveTab={setActiveTab} onLogout={onLogout} />
       <DashTopBar t={t} isDark={isDark} setIsDark={setIsDark} lang={lang} setLang={setLang} />
-      <main style={{ marginLeft: 220, padding: '16px 24px 28px 28px', animation: 'fadeIn 0.3s ease' }}>
+      <main style={{ marginLeft: 220, paddingTop: 76, paddingRight: 24, paddingBottom: 28, paddingLeft: 28, animation: 'fadeIn 0.3s ease' }}>
         {renderContent()}
       </main>
     </div>
