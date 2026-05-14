@@ -381,7 +381,7 @@ function ParticleCanvas({ isDark }) {
         if (p.y < 0 || p.y > h) p.vy *= -1;
         ctx.beginPath();
         ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(${color},0.5)`;
+        ctx.fillStyle = `rgba(${color},${isDark ? 0.5 : 0.3})`;
         ctx.fill();
       });
 
@@ -652,8 +652,8 @@ function LandingNav({ t, isDark, setIsDark, lang, setLang, onLogin, onRegister }
       <div style={{ display: 'flex', alignItems: 'center', gap: '32px' }}>
         {['home', 'features', 'models', 'pricing'].map((k) => (
           <a key={k} href={`#${k}`} style={{ color: s.textMuted, textDecoration: 'none', fontSize: 14, fontWeight: 500, transition: 'color 0.2s' }}
-            onMouseEnter={(e) => (e.target.style.color = s.accent)}
-            onMouseLeave={(e) => (e.target.style.color = s.textMuted)}>
+            onMouseEnter={(e) => (e.currentTarget.style.color = s.accent)}
+            onMouseLeave={(e) => (e.currentTarget.style.color = s.textMuted)}>
             {t.nav[k]}
           </a>
         ))}
@@ -685,7 +685,7 @@ function HeroSection({ t, isDark, onLogin }) {
         <span style={{ width: 8, height: 8, borderRadius: '50%', background: s.accent, animation: 'pulse 2s infinite' }} />
         <span style={{ color: s.accent, fontSize: 14, fontWeight: 500 }}>{t.hero.brand}</span>
       </div>
-      <h1 style={{ fontSize: 'clamp(36px, 5vw, 64px)', fontWeight: 800, lineHeight: 1.2, marginBottom: '20px', color: isDark ? '#e4e4e7' : '#18181b', background: isDark ? 'linear-gradient(135deg, #e4e4e7 0%, #7c5cfc 100%)' : 'linear-gradient(135deg, #1a1a2e 0%, #5b21b6 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+      <h1 style={{ fontSize: 'clamp(36px, 5vw, 64px)', fontWeight: 800, lineHeight: 1.2, marginBottom: '20px', color: isDark ? '#e4e4e7' : '#18181b', background: isDark ? 'linear-gradient(135deg, #e4e4e7 0%, #7c5cfc 100%)' : 'linear-gradient(135deg, #4a1d96 0%, #7c5cfc 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>
         {t.hero.title}
       </h1>
       <p style={{ fontSize: 'clamp(16px, 2vw, 20px)', color: s.textMuted, maxWidth: '640px', lineHeight: 1.6, marginBottom: '40px' }}>
@@ -982,15 +982,11 @@ function DashTopBar({ t, isDark, setIsDark, lang, setLang }) {
   const s = getDashStyles(isDark);
   return (
     <header style={{ position: 'fixed', top: 0, left: 220, right: 0, height: 60, background: isDark ? 'rgba(10,15,30,0.8)' : 'rgba(240,242,245,0.8)', backdropFilter: 'blur(12px)', borderBottom: `1px solid ${isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'}`, display: 'flex', alignItems: 'center', justifyContent: 'flex-end', padding: '0 24px', gap: '12px', zIndex: 40 }}>
-      <button onClick={() => setLang(lang === 'zh' ? 'en' : 'zh')} style={{ padding: '6px 14px', borderRadius: '8px', border: `1px solid ${s.border}`, background: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)', color: s.text, cursor: 'pointer', fontSize: 13, fontWeight: 600, transition: 'all 0.2s ease', display: 'flex', alignItems: 'center', gap: '6px' }}
-        onMouseEnter={e => { e.currentTarget.style.borderColor = s.accent; e.currentTarget.style.background = isDark ? 'rgba(79,142,247,0.15)' : 'rgba(79,142,247,0.08)'; }}
-        onMouseLeave={e => { e.currentTarget.style.borderColor = s.border; e.currentTarget.style.background = isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)'; }}>
+      <button onClick={() => setLang(lang === 'zh' ? 'en' : 'zh')} className="topbar-btn" style={{ padding: '6px 14px', borderRadius: '8px', border: `1px solid ${s.border}`, background: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)', color: s.text, cursor: 'pointer', fontSize: 13, fontWeight: 600, transition: 'all 0.2s ease', display: 'flex', alignItems: 'center', gap: '6px' }}>
         {Icons.globe}
         {lang === 'zh' ? 'EN' : '中文'}
       </button>
-      <button onClick={() => setIsDark(!isDark)} style={{ padding: '6px 10px', borderRadius: '8px', border: `1px solid ${s.border}`, background: 'transparent', color: s.textSecondary, cursor: 'pointer', display: 'flex', alignItems: 'center', transition: 'all 0.2s ease' }}
-        onMouseEnter={e => e.currentTarget.style.borderColor = s.accent}
-        onMouseLeave={e => e.currentTarget.style.borderColor = s.border}>
+      <button onClick={() => setIsDark(!isDark)} className="topbar-btn" style={{ padding: '6px 10px', borderRadius: '8px', border: `1px solid ${s.border}`, background: 'transparent', color: s.textSecondary, cursor: 'pointer', display: 'flex', alignItems: 'center', transition: 'all 0.2s ease' }}>
         {isDark ? Icons.sun : Icons.moon}
       </button>
       <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginLeft: '12px', padding: '6px 14px', borderRadius: '8px', background: isDark ? 'rgba(34,197,94,0.1)' : 'rgba(34,197,94,0.08)' }}>
@@ -1641,6 +1637,7 @@ const globalCSS = `
   @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
   @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
   html { scroll-behavior: smooth; }
+  .topbar-btn:hover { border-color: #4f8ef7 !important; background: rgba(79,142,247,0.12) !important; }
 `;
 
 // ============ Main App ============
